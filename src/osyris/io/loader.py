@@ -12,6 +12,7 @@ from .part import PartReader
 from .rt import RtReader
 from .sink import SinkReader
 from .reader import ReaderKind
+from .multifluid import MfReader
 
 
 class Loader:
@@ -27,7 +28,8 @@ class Loader:
             "grav": GravReader(),
             "part": PartReader(),
             "rt": RtReader(),
-            "sink": SinkReader()
+            "sink": SinkReader(),
+            "mf": MfReader()
         }
 
     def load_metadata(self):
@@ -51,7 +53,9 @@ class Loader:
              sortby=None,
              meta=None,
              units=None,
-             ramses_ism=False):
+             ramses_ism=False,
+             full_print=True,
+             ):
 
         out = {}
         groups = list(self.readers.keys())
@@ -123,7 +127,8 @@ class Loader:
             cpu_list = []
         else:
             meta["nparticles"] = 0
-            print("Processing {} files in {}".format(len(cpu_list), meta["infile"]))
+            if (full_print) :
+                print("Processing {} files in {}".format(len(cpu_list), meta["infile"]))
 
         # Allocate work arrays
         twotondim = 2**meta["ndim"]
@@ -141,8 +146,9 @@ class Loader:
             # Print progress
             percentage = int(float(cpu_ind) * 100.0 / float(len(cpu_list)))
             if percentage >= iprog * istep:
-                print("{:>3d}% : read {:>10d} cells, {:>10d} particles".format(
-                    percentage, meta["ncells"], meta["nparticles"]))
+                if (full_print) :
+                    print("{:>3d}% : read {:>10d} cells, {:>10d} particles".format(
+                        percentage, meta["ncells"], meta["nparticles"]))
                 iprog += 1
 
             # Read binary files
@@ -234,9 +240,9 @@ class Loader:
                     out[group][key] = np.concatenate(list(item["pieces"].values()))
             # If vector quantities are found, make them into vector Arrays
             utils.make_vector_arrays(out[group], ndim=meta["ndim"])
-
-        print("Loaded: {} cells, {} particles.".format(meta["ncells"],
-                                                       meta["nparticles"]))
+        if (full_print) :
+            print("Loaded: {} cells, {} particles.".format(meta["ncells"],
+                                                        meta["nparticles"]))
 
         # Apply sorting if any requested from args
         if sortby is not None:

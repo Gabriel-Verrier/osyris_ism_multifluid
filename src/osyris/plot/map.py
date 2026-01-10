@@ -3,7 +3,7 @@
 
 import numpy as np
 import numpy.ma as ma
-from pint.quantity import Quantity
+from pint import Quantity
 from typing import Union
 from .direction import get_direction
 from .render import render
@@ -131,8 +131,8 @@ def map(*layers,
         Default is ``256``.
 
     :param operation: The operation to apply along the ``z`` dimension if ``dz`` is
-        not ``None``. Possible values are ``'sum'``, ``'mean'``, ``'min'``, and
-        ``'max'``. Default is ``'sum'``.
+        not ``None``. Possible values are ``'sum'``, ``'nansum'``, ``'mean'``,
+         ``'min'``, and ``'max'``. Default is ``'sum'``.
 
     :param ax: A matplotlib axes inside which the figure will be plotted.
         Default is ``None``, in which case some new axes a created.
@@ -336,10 +336,10 @@ def map(*layers,
                               ndim=ndim)
 
     # Apply operation along depth
-    binned = getattr(binned, operation)(axis=1)
+    binned = getattr(np, operation)(binned, axis=1)
 
     # Handle thick maps
-    if thick and (operation == "sum"):
+    if thick and ((operation == "sum") or (operation == "nansum")):
         binned *= zspacing
         for layer in to_render:
             layer["unit"] = layer["unit"] * dataz.unit
