@@ -8,14 +8,21 @@ Osyris aims to remain portable, lightweight and fast,
 to allow users to quickly explore and understand their simulation data,
 as well as produce publication grade figures.
 
+This version, based on Osyris 2, allows users to read the multifluid
+implemented in RAMSES in Gabriel Verrier, Ugo Lebreuilly, and
+Patrick Hennebelle (2025), with the help of Adnan Ali Ahmad.
+
 ## Documentation
 
-The documentation for `osyris` can be found at https://osyris.readthedocs.io.
+The documentation for `osyris` 2, written by Neil Vaytet and contributors,
+can be found at https://osyris.readthedocs.io/en/2.11.0/.
 
 ## Installation
 
+For a local copy of this version at a user-defined path `osyris_path`:
+
 ```sh
-pip install osyris
+git clone https://github.com/Gabriel-Verrier/osyris_ism_multifluid.git
 ```
 
 ## A short example
@@ -23,11 +30,18 @@ pip install osyris
 You can download the sample data
 [here](https://github.com/osyris-project/osyrisdata/archive/refs/heads/main.zip).
 
+Import osyris from `"osyris_path"` and load data from `"data_path"`.
+
+```python
+import sys
+sys.path.append("osyris_path/osyris_ism_multifluid")
+import src.osyris as osyris
+data = osyris.Dataset(8, path="data_path").load() #load output 8
+```
+
 Plot a 2D histogram of the cell magnetic field versus the gas density.
 
 ```python
-import osyris
-data = osyris.Dataset(8, scale="au", path="data").load()
 osyris.histogram2d(data["hydro"]["density"], data["hydro"]["B_field"],
                    norm="log", loglog=True)
 ```
