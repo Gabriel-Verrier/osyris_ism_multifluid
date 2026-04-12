@@ -56,18 +56,34 @@ class MfReader(Reader):
         self.initialized = True
 
     def read_header(self, info):
-        #was originally the same as for hydro, with the same lines in ramses/multifluid/output_multifluid f90
-        """
-    fileloc=TRIM(filename)//TRIM(nchar)
-    open(unit=ilun,file=fileloc,form='unformatted')
-    write(ilun)ncpu
-    write(ilun)nvarflu
-    write(ilun)ndim
-    write(ilun)nlevelmax
-    write(ilun)nboundary
-    write(ilun)gamma
-        """
+
         new_osyris=True 
+        # Here new_osyris is a keyword which is the momento of various changes 
+        # in the way additional multifluid information is output (see the RAMSES code (ramses/multifluid/output_multifluid.f90), multifluid file descriptor and info_mf).
+        # Multifluid outputs and info file was originally the same as for hydro, which is read with the new_osyris=False option.
+        # In particular, the structure of the file given in the subroutine backup_mf was
+        """
+        fileloc=TRIM(filename)//TRIM(nchar)
+        open(unit=ilun,file=fileloc,form='unformatted')
+        write(ilun)ncpu
+        write(ilun)nvarflu
+        write(ilun)ndim
+        write(ilun)nlevelmax
+        write(ilun)nboundary
+        write(ilun)gamma
+        """
+        # It has originally been used for the development of the multifluid (2023-2024).
+        # When the first multifluid simulations with a MRN distribution started,
+        # we provided in the outputs the grain sizes (to check the initialisation, the restart, to avoid ambiguities in the post-processing).
+        # Our first approach was to remove write(ilun)gamma from the format (because it is not a multifluid parameter) and to add write(ilun)mf_grainsize instead.
+        # The resulting modification of osyris (multifluid read_header) is maintained through new_osyris=True.
+        # It allows to read several multifluid simulations run in 2025.
+        # For a more versatile post-processing, we went back to the original format
+        # and we output the grain sizes in the info_mf text files instead.
+        # Therefore, new_osyris=False is the updated version, in agreement with the current RAMSES code.
+        # Note that grain intrinsic densities can be also be read now thanks to new_osyris=False.
+
+
         self.offsets["i"] += 5 #due to above lines
         self.offsets["n"] += 5
         #print(info)
@@ -82,13 +98,26 @@ class MfReader(Reader):
         for key in meta_mf:
             self.meta[key]=meta_mf[key]
             info[key]=meta_mf[key]
+        
+        # Detection of the multifluid output format (version)
         if('mf_grain_size_1' in self.meta):
             new_osyris=False
+        
         if(new_osyris==False):
+
+            #Gather in arrays some keys (grain sizes and grain densities)
             mf_grainsize=np.array([])
             for ifluid in range(1,info['nfluid']+1):
                 mf_grainsize=np.append(mf_grainsize,info['mf_grain_size_'+str(ifluid)])
             info["mf_grainsize"] = mf_grainsize
+
+            if('mf_grain_density_1' in self.meta):
+                mf_grain_density=np.array([])
+                for ifluid in range(1,info['nfluid']+1):
+                    mf_grain_density=np.append(mf_grain_density,info['mf_grain_density_'+str(ifluid)])
+                info["mf_graindens"] = mf_grain_density
+
+            #Note: The info['mf_grain_size_'+str(ifluid)] and info['mf_grain_density_'+str(ifluid)] could be removed from the dictonnary keys.
 
         if new_osyris :
             # nfluid

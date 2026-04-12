@@ -9,8 +9,8 @@ to allow users to quickly explore and understand their simulation data,
 as well as produce publication grade figures.
 
 This version, based on Osyris 2, allows users to read the multifluid
-implemented in RAMSES in Gabriel Verrier, Ugo Lebreuilly, and
-Patrick Hennebelle (2025), with the help of Adnan Ali Ahmad.
+implemented in RAMSES in [Gabriel Verrier, Ugo Lebreuilly, and
+Patrick Hennebelle (2025)](https://doi.org/10.1051/0004-6361/202554662), with the help of Adnan Ali Ahmad.
 
 ## Documentation
 
